@@ -1,0 +1,49 @@
+name: daily-summary
+
+# One summary email per day at 22:05 CST (14:05 UTC; GitHub cron is
+# UTC). Reads today's status log written by the snatch workflow and
+# leaves ONE comment @mentioning the repo owner on a fixed issue;
+# GitHub emails the owner about the mention. Successful snatches do
+# not wait for this: snatch.yml opens an urgent issue immediately.
+
+on:
+  schedule:
+    - cron: '5 14 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Post today's summary comment (triggers one email)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TODAY="$(TZ=Asia/Shanghai date '+%Y-%m-%d')"
+          FILE="status/${TODAY}.log"
+          if [ -f "$FILE" ]; then
+            TOTAL=$(grep -c '' "$FILE")
+            WON=$(grep -c '抢到了' "$FILE" || true)
+            NONE=$(grep -c '没抢到' "$FILE" || true)
+            EXIST=$(grep -c '已存在' "$FILE" || true)
+            ERR=$(grep -c '出错' "$FILE" || true)
+            LAST=$(tail -n 1 "$FILE")
+            DETAIL=$(cat "$FILE")
+          else
+            TOTAL=0; WON=0; NONE=0; EXIST=0; ERR=0
+            LAST='今天没有运行记录'
+            DETAIL='今天没有任何一轮运行记录。如果蹲机工作流是启用状态，说明定时任务可能没有正常触发，请到 Actions 页检查。'
+          fi
+          BODY=$(printf '@%s 蹲机日报 %s\n\n今日运行: %s 轮\n抢到: %s | 没容量: %s | 已存在: %s | 出错: %s\n最近一轮: %s\n\n明细:\n%s' "${{ github.repository_owner }}" "$TODAY" "$TOTAL" "$WON" "$NONE" "$EXIST" "$ERR" "$LAST" "$DETAIL")
+          ISSUE_NUM=$(gh issue list --search '蹲机每日汇总 in:title' --json number --jq '.[0].number')
+          if [ -z "$ISSUE_NUM" ] || [ "$ISSUE_NUM" = "null" ]; then
+            gh issue create --title '蹲机每日汇总' --body '每天 22:05（北京时间）在这里汇总当天蹲机结果，并 @ 仓库主人触发一封邮件。' >/dev/null
+            ISSUE_NUM=$(gh issue list --search '蹲机每日汇总 in:title' --json number --jq '.[0].number')
+          fi
+          gh issue comment "$ISSUE_NUM" --body "$BODY"
