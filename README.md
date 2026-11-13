@@ -45,18 +45,21 @@
 4. 抢到后工作流会自动开一个 Issue 通知你（GitHub 会给仓库主人发
    邮件/App 通知）。看到后告诉 Muse，把另一边的蹲机停掉。
 
-## 邮件通知（抢到 / 没抢到都发）
+## 邮件通知（每天汇总一封 + 抢到立即发）
 
-- 工作流每轮运行结束都会在固定的「蹲机状态通知」Issue 里留一条
-  结果评论（抢到了 / 没抢到 / 出错），评论里会 @ 仓库主人，GitHub
-  默认会就 @ 提醒发邮件，所以每轮都会有一封结果邮件。
-- 邮件发到 **GitHub 账号的主邮箱**。想改收件邮箱：GitHub →
-  Settings → Emails 改主邮箱，或 Settings → Notifications 里
-  另设通知邮箱。
-- 前提：GitHub → Settings → Notifications 里，邮件通知（尤其
-  @mentions）是开着的。如果一直收不到，先去那里确认。
-- 注意频率：公共仓库模式是每小时一轮，一天最多约 24 封结果邮件。
-  嫌多的话告诉 Muse，可改成「每天汇总一封 + 抢到立即发」。
+- 每轮运行的结果先记到仓库的 `status/<日期>.log` 里，不发邮件。
+- 每天 22:05（北京时间），`daily-summary` 工作流把当天记录汇总
+  成一条评论，发在固定的「蹲机每日汇总」Issue 里并 @ 仓库主人，
+  GitHub 据此发一封邮件：当天跑了多少轮、多少轮没容量、有没有
+  出错、最后一轮是什么时候。
+- 抢到不等汇总：抢到的那一刻，`snatch` 工作流立刻单独开一个
+  Issue 并 @ 仓库主人，马上发邮件。
+- 邮件发到 **GitHub 账号的主邮箱**；前提是 Settings →
+  Notifications 里邮件通知（尤其 @mentions）开着。想换收件邮箱
+  在 Settings → Emails / Notifications 里改（建议换成一个能稳定
+  收信的邮箱）。
+- 附带好处：每轮的状态提交让仓库一直有活动，公共仓库「60 天
+  无活动停用定时任务」基本不会触发（keepalive 作为双保险保留）。
 
 ## 需要填的 7 个 Secret
 
@@ -97,7 +100,9 @@ key_file=/home/runner/.oci/oci_api_key.pem
 - `snatch_once.py`：蹲机脚本。`RUN_MINUTES=0` 只试一轮；
   `RUN_MINUTES=50` 循环约 50 分钟。每轮先 list 实例做防重复检查。
 - `.github/workflows/snatch.yml`：定时触发 + 装环境 + 写密钥 + 跑脚本；
-  抢到后自动开 Issue 通知。
+  抢到后立刻开 Issue 通知；每轮结果记入 `status/<日期>.log`。
+- `.github/workflows/daily-summary.yml`：每天 22:05（北京时间）汇总
+  当天状态日志，发一封日报邮件。
 - `.github/workflows/keepalive.yml`：每月提交一次，防止公共仓库的
   定时任务被 GitHub 因 60 天无活动停用。
 - `requirements.txt`：只装 `oci` SDK。
