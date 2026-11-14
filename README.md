@@ -48,7 +48,7 @@
 ## 邮件通知（每天汇总一封 + 抢到立即发）
 
 - 每轮运行的结果先记到仓库的 `status/<日期>.log` 里，不发邮件。
-- 每天 22:05（北京时间），`daily-summary` 工作流把当天记录汇总
+- 每天 20:00（北京时间），`daily-summary` 工作流把当天记录汇总
   成一条评论，发在固定的「蹲机每日汇总」Issue 里并 @ 仓库主人，
   GitHub 据此发一封邮件：当天跑了多少轮、多少轮没容量、有没有
   出错、最后一轮是什么时候。
@@ -101,7 +101,7 @@ key_file=/home/runner/.oci/oci_api_key.pem
   `RUN_MINUTES=50` 循环约 50 分钟。每轮先 list 实例做防重复检查。
 - `.github/workflows/snatch.yml`：定时触发 + 装环境 + 写密钥 + 跑脚本；
   抢到后立刻开 Issue 通知；每轮结果记入 `status/<日期>.log`。
-- `.github/workflows/daily-summary.yml`：每天 22:05（北京时间）汇总
+- `.github/workflows/daily-summary.yml`：每天 20:00（北京时间）汇总
   当天状态日志，发一封日报邮件。
 - `.github/workflows/keepalive.yml`：每月提交一次，防止公共仓库的
   定时任务被 GitHub 因 60 天无活动停用。
