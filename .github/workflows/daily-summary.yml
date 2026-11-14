@@ -1,6 +1,6 @@
 name: daily-summary
 
-# One summary email per day at 22:05 CST (14:05 UTC; GitHub cron is
+# One summary email per day at 20:00 CST (12:00 UTC; GitHub cron is
 # UTC). Reads today's status log written by the snatch workflow and
 # leaves ONE comment @mentioning the repo owner on a fixed issue;
 # GitHub emails the owner about the mention. Successful snatches do
@@ -8,7 +8,7 @@ name: daily-summary
 
 on:
   schedule:
-    - cron: '5 14 * * *'
+    - cron: '0 12 * * *'
   workflow_dispatch: {}
 
 permissions:
@@ -43,7 +43,7 @@ jobs:
           BODY=$(printf '@%s 蹲机日报 %s\n\n今日运行: %s 轮\n抢到: %s | 没容量: %s | 已存在: %s | 出错: %s\n最近一轮: %s\n\n明细:\n%s' "${{ github.repository_owner }}" "$TODAY" "$TOTAL" "$WON" "$NONE" "$EXIST" "$ERR" "$LAST" "$DETAIL")
           ISSUE_NUM=$(gh issue list --state all --limit 100 --json number,title --jq '.[] | select(.title == "蹲机每日汇总") | .number' | head -n 1)
           if [ -z "$ISSUE_NUM" ]; then
-            ISSUE_URL=$(gh issue create --title '蹲机每日汇总' --body '每天 22:05（北京时间）在这里汇总当天蹲机结果，并 @ 仓库主人触发一封邮件。')
+            ISSUE_URL=$(gh issue create --title '蹲机每日汇总' --body '每天 20:00（北京时间）在这里汇总当天蹲机结果，并 @ 仓库主人触发一封邮件。')
             ISSUE_NUM=$(printf '%s' "$ISSUE_URL" | grep -o '[0-9]*$')
           fi
           gh issue comment "$ISSUE_NUM" --body "$BODY"
