@@ -71,7 +71,7 @@ jobs:
           OCI_SSH_PUBKEY_FILE: ~/oracle_sg.pub
         run: |
           set -o pipefail
-          python snatch_once.py 2>&1 | tee snatch_output.log
+          python -u snatch_once.py 2>&1 | tee snatch_output.log
 
       # Immediate notification when an instance is created: a dedicated
       # issue that @mentions the owner -> GitHub emails them at once.
