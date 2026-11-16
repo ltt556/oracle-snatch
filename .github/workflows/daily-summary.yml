@@ -29,7 +29,7 @@ jobs:
           HOUR="$(TZ=Asia/Shanghai date '+%H')"
           if [ "$HOUR" -lt 6 ]; then
             TODAY="$(TZ=Asia/Shanghai date -d 'yesterday' '+%Y-%m-%d')"
-        fi
+          fi
           FILE="status/${TODAY}.log"
           if [ -f "$FILE" ]; then
             TOTAL=$(grep -c '' "$FILE")
