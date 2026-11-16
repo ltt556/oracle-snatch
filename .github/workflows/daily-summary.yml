@@ -26,6 +26,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TODAY="$(TZ=Asia/Shanghai date '+%Y-%m-%d')"
+          HOUR="$(TZ=Asia/Shanghai date '+%H')"
+          if [ "$HOUR" -lt 6 ]; then
+            TODAY="$(TZ=Asia/Shanghai date -d 'yesterday' '+%Y-%m-%d')"
+        fi
           FILE="status/${TODAY}.log"
           if [ -f "$FILE" ]; then
             TOTAL=$(grep -c '' "$FILE")
